@@ -1,3 +1,7 @@
+
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 """
 Graph search to find shortest path between two cities.
 
@@ -11,7 +15,7 @@ attribute for each node.  After completion of depth first search,
 destination city should be labeled with the shortest distance from
 the start city.
 """
-__author__ = "???"
+__author__ = "jayaimzzz"
 
 import argparse
 
@@ -33,7 +37,20 @@ def read_distances(map_file):
         we assume that roads are bi-directional.
     """
     connections = dict()
-    raise NotImplementedError("Implement this function")
+    for line in map_file:
+        line = line.split(",")
+        if len(line) == 3 and not line[0].startswith("#"):
+            start, end, distance = line[0],line[1],float(line[2])
+            t = (end,distance)
+            rt = (start,distance)
+            if start in connections:
+                connections[start].append(t)
+            else:
+                connections[start] = [t]
+            if end in connections:
+                connections[end].append(rt)
+            else:
+                connections[end] = [rt]
     return connections
 
 
@@ -73,7 +90,19 @@ def dfs(place, dist_so_far, roads, distances):
     #      - We've been here before, but this way is shorter (dist_so_far)
     #    Consider which are base cases, and which require recursion.
     #    For the cases that require recursion, what is the progress step?
-    raise NotImplementedError("Implement this function")
+    for neighbor_tuple in roads[place]:
+        city, distance = neighbor_tuple[0], neighbor_tuple[1]
+        new_distance = distance + dist_so_far
+        if city not in distances:
+            distances[city] = new_distance
+        elif new_distance < distances[city]:
+            distances[city] = new_distance
+        roads_shallow_copy = dict(roads)
+        roads_shallow_copy.pop(place)
+        if roads_shallow_copy and city in roads_shallow_copy:
+            dfs(city, new_distance, roads_shallow_copy, distances)
+        
+
 
 
 def main():
@@ -90,6 +119,7 @@ def main():
     parser.add_argument('map_file', type=argparse.FileType('r'),
                         help="Name of file containing road connections and distances")
     args = parser.parse_args()
+
     start_place = args.from_place
     destination = args.to_place
     roads = read_distances(args.map_file)
